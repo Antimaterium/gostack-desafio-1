@@ -1,8 +1,25 @@
 const express = require("express");
 const server = express();
 const projects = [];
+let totalRequests = 0;
+
+function logger(req, res, next) {
+  console.log(`Number of requests ${totalRequests++}`);
+  next();
+}
+
+function checkIfProjectExists(req, res, next) {
+  const { id } = req.params;
+  const project = projects.find(project => project.id === Number(id));
+  if (!project) {
+    return res.status.json({ error: "Project not found" });
+  }
+  next();
+}
 
 server.use(express.json());
+server.use("/", logger);
+server.use("project/:id", checkIfProjectExists);
 
 server.post("/project", (req, res) => {
   const { id, title } = req.body;
